@@ -1912,7 +1912,8 @@ void GLCanvas3D::render(bool only_init)
     _render_background();
 
     //BBS add partplater rendering logic
-    bool only_current = false, only_body = false, show_axes = true, no_partplate = false;
+    bool only_current = false, only_body = false, no_partplate = false;
+    bool show_axes = wxGetApp().app_config->get("show_axes") == "true";
     bool show_grid = true;
     GLGizmosManager::EType gizmo_type = m_gizmos.get_current_type();
     if (!m_main_toolbar.is_enabled()) {
