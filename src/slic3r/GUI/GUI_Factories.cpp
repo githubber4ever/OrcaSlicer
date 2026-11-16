@@ -1973,7 +1973,10 @@ void MenuFactory::create_filament_action_menu(bool init, int active_filament_men
 
     wxMenu* sub_menu = new wxMenu();
     std::vector<wxBitmap*> icons = get_extruder_color_icons(true);
-    int filaments_cnt = Sidebar::should_show_SEMM_buttons() ? icons.size() : 0;
+    // The menu is built once without a filament (-1) at start-up and again for the one a click opened.
+    const bool can_remove = active_filament_menu_id < 0 ? Sidebar::should_show_SEMM_buttons() :
+                            plater()->sidebar().can_delete_filament(size_t(active_filament_menu_id));
+    int filaments_cnt = can_remove ? icons.size() : 0;
     for (int i = 0; i < filaments_cnt; i++) {
         if (i == active_filament_menu_id)
             continue;
@@ -2000,10 +2003,9 @@ void MenuFactory::create_filament_action_menu(bool init, int active_filament_men
     append_menu_item(
         menu, wxID_ANY, _L("Delete"), _L("Delete this filament"), [](wxCommandEvent&) {
             plater()->sidebar().delete_filament(-2); }, "", nullptr,
-        []() {
-            return plater()->sidebar().combos_filament().size() > 1
-                // Orca: only show delete filament option for SEMM machines unless is BBL
-                && Sidebar::should_show_SEMM_buttons();
+        [can_remove]() {
+            // Orca: SEMM machines and BBL can delete any filament; fixed-extruder machines only those past their extruders
+            return plater()->sidebar().combos_filament().size() > 1 && can_remove;
         }, m_parent);
 }
 

@@ -3753,8 +3753,8 @@ void Sidebar::init_filament_combo(PlaterPresetComboBox **combo, const int filame
     edit_btn->Bind(wxEVT_BUTTON, [this, edit_btn, combobox, filament_idx](wxCommandEvent) {
         bool single_or_bbl     = should_show_SEMM_buttons();
         bool is_multi_material = p->combos_filament.size() > 1;
-        if(single_or_bbl && is_multi_material) {
-           // MULTI MATERIAL Show menu
+        if(is_multi_material && can_delete_filament(filament_idx)) {
+           // MULTI MATERIAL, or a filament beyond a fixed machine's extruders: show the menu
             auto menu = p->plater->filament_action_menu(filament_idx);
             wxPoint pt { 0, edit_btn->GetSize().GetHeight() + FromDIP(2) };
             pt = edit_btn->ClientToScreen(pt);
@@ -5869,6 +5869,13 @@ void Sidebar::add_filament() {
         m_scrolled_sizer->Layout();
     }
     filament_list->Scroll(-1, INT_MAX); // ORCA scroll to end of list on changes to inform user about filament count
+}
+
+bool Sidebar::can_delete_filament(size_t filament_id)
+{
+    if (p->combos_filament.size() <= 1)
+        return false;
+    return should_show_SEMM_buttons() || filament_id >= wxGetApp().preset_bundle->get_printer_extruder_count();
 }
 
 void Sidebar::delete_filament(size_t filament_id, int replace_filament_id) {

@@ -239,6 +239,9 @@ public:
     void get_small_btn_sync_pos_size(wxPoint &pt, wxSize &size);
     // Orca
     static bool should_show_SEMM_buttons();
+    // Single-extruder machines can drop any filament. A machine with fixed extruders keeps one filament per
+    // extruder, but one beyond them (added by a colour import, say) has nothing behind it and can go.
+    bool can_delete_filament(size_t filament_id);
     void show_SEMM_buttons();
     void enable_purge_mode_btn(bool enable);
     // Sidebar nozzle-count badge on the extruder cards (multi-nozzle printers only).
