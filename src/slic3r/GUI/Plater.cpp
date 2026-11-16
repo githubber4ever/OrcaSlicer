@@ -19190,7 +19190,11 @@ static LoadType choose_3mf_load_type(Plater& plater, const fs::path& file)
         return LoadType::LoadGeometry;
     const std::string filename = encode_path(file.filename().string().c_str());
     const bool ask_when_relevant = wxGetApp().app_config->get(SETTING_PROJECT_LOAD_BEHAVIOUR) == OPTION_PROJECT_LOAD_BEHAVIOUR_ASK_WHEN_RELEVANT;
-    return determine_load_type(filename, !plater.model().objects.empty() && ask_when_relevant ? OPTION_PROJECT_LOAD_BEHAVIOUR_ALWAYS_ASK : "");
+    // "Relevant" = the plate already has objects, or the project was made for a different printer.
+    const std::string project_printer = project_3mf_printer_preset(file.string());
+    const bool relevant = !plater.model().objects.empty() ||
+                          (!project_printer.empty() && project_printer != wxGetApp().preset_bundle->printers.get_edited_preset().name);
+    return determine_load_type(filename, relevant && ask_when_relevant ? OPTION_PROJECT_LOAD_BEHAVIOUR_ALWAYS_ASK : "");
 }
 
 //BBS: remove GCodeViewer as seperate APP logic

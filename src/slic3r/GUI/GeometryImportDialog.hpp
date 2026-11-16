@@ -45,6 +45,8 @@ struct GeometryImportNamePolicy {
 std::string geometry_import_format(const std::string& path);
 // Inspect the ZIP directory only, so CAD files do not enter the project-opening path.
 bool is_geometry_only_3mf(const std::string& path);
+// Printer preset name stored in a project 3MF's project_settings.config; empty if absent or unreadable.
+std::string project_3mf_printer_preset(const std::string& path);
 GeometryImportOptions geometry_import_options(const AppConfig& config, const std::string& format);
 GeometryImportNamePolicy geometry_import_name_policy(const AppConfig& config);
 bool show_geometry_import_options(wxWindow* parent, const std::string& format, GeometryImportOptions& options);

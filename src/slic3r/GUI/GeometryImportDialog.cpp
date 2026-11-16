@@ -11,6 +11,7 @@
 
 #include <boost/algorithm/string/predicate.hpp>
 #include <miniz.h>
+#include <nlohmann/json.hpp>
 #include <wx/colour.h>
 #include <wx/dialog.h>
 #include <wx/event.h>
@@ -208,6 +209,29 @@ bool is_geometry_only_3mf(const std::string& path)
         has_model = has_model || (boost::algorithm::istarts_with(name, "3D/") && boost::algorithm::iends_with(name, ".model"));
     }
     return has_model;
+}
+
+std::string project_3mf_printer_preset(const std::string& path)
+{
+    mz_zip_archive archive;
+    mz_zip_zero_struct(&archive);
+    if (!open_zip_reader(&archive, path))
+        return {};
+    ScopeGuard close_archive([&archive]() { close_zip_reader(&archive); });
+
+    size_t size = 0;
+    void*  data = mz_zip_reader_extract_file_to_heap(&archive, "Metadata/project_settings.config", &size, 0);
+    if (data == nullptr)
+        return {};
+    std::string printer;
+    try {
+        const auto json = nlohmann::json::parse(static_cast<const char*>(data), static_cast<const char*>(data) + size);
+        if (json.contains("printer_settings_id") && json["printer_settings_id"].is_string())
+            printer = json["printer_settings_id"].get<std::string>();
+    } catch (const std::exception&) {
+    }
+    mz_free(data);
+    return printer;
 }
 
 GeometryImportNamePolicy geometry_import_name_policy(const AppConfig& config)
